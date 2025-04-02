@@ -98,6 +98,7 @@ int main(int argc, char *argv[]) {
     // 1     0(i=0 j=0)   2         [1, 2, ?]
     // 2     2(i=2 j=0)   3         [1, 2, 3]
     // Wynik zapisze się w procesie "ROOT" o indeksie 0 (pos = 0), w tym przypadku to proces 3.
+    // MPI_Gather(wsk_do_buforu_zawierajacego_dane,liczba_elementow,typ_elementow,bufor_odbierajacy_dane,liczba_elementow_do_bufora_odbierajacego,typ_elementow_do_bufora_odbierajacego,numer_procesu_root, komunikator)
     if (j == 0) {
         MPI_Gather(&a[i], 1, MPI_INT, wynik, 1, MPI_INT, 0, kom_kolumny);
     }
