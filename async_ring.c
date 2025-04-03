@@ -16,7 +16,8 @@ int main(int argc, char** argv) {
     MPI_Irecv(&data_received, 1, MPI_INT, right_neighbor, tag, MPI_COMM_WORLD, &reqRecv);
     MPI_Isend(&my_rank, 1, MPI_INT, left_neighbor, tag, MPI_COMM_WORLD, &reqSend);
 
-
+    MPI_Wait(&reqSend, &statSend);
+    MPI_Wait(&reqRecv, &statRecv); 
     printf("Process %d received from right neighbor: %d\n", my_rank, data_received);
 
     MPI_Finalize();
