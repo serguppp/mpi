@@ -22,9 +22,6 @@ int main(int argc, char *argv[]) {
     int a[N] = {0,1,3,-421412,2222};  
     int wynik[N] = {0};                
 
-    //Rozsyłanie elementów tablicy a o wymiarach NxN typu INT do każdego procesu w MPI_COMM_WORLD. Początkowo tablica jest w procesie 0.
-    MPI_Bcast(a, N, MPI_INT, 0, MPI_COMM_WORLD);
-
     int i = rank / N;  // indeks wiersza
     int j = rank % N;  // indeks kolumny
     int pos = 0;       // pozycja po sortowaniu
