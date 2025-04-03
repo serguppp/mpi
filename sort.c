@@ -86,7 +86,6 @@ int main(int argc, char *argv[]) {
     //           grupa 0 (z kolumny j==0)
     //  proces  3   0   6
     //  pos     0   1   2
-    // przy czym proces nie jest integralną częścią zmiennej kom_kolumny: wiersz ten podano dla przejrzystości
 
     MPI_Comm kom_kolumny;
     MPI_Comm_split(MPI_COMM_WORLD, j, pos, &kom_kolumny);
