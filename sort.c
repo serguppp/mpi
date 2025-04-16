@@ -22,9 +22,6 @@ int main(int argc, char *argv[]) {
     int a[N] = {0,1,3,-421412,2222};  
     int wynik[N] = {0};                
 
-    //Rozsyłanie elementów tablicy a o wymiarach NxN typu INT do każdego procesu w MPI_COMM_WORLD. Początkowo tablica jest w procesie 0.
-    MPI_Bcast(a, N, MPI_INT, 0, MPI_COMM_WORLD);
-
     int i = rank / N;  // indeks wiersza
     int j = rank % N;  // indeks kolumny
     int pos = 0;       // pozycja po sortowaniu
@@ -70,7 +67,7 @@ int main(int argc, char *argv[]) {
     // grupa 0:    0    1
     // grupa 1:    3    0
     // grupa 2:    6    2
-    // przy czym proces nie jest integralną częścią zmiennej kom_wiersza; kolumnę tę podano dla przejrzystości
+
     // Ta suma (pos) oznacza, że dla elementu a[i] jest pos liczb mniejszych
     // docelowo element a[i] trafi na pozycję numer pos w tablicy posortowanej:
     // dla i=0: proces 0 przechowuje a[0] = 2 i ma trafić (ale jeszcze nie trafia, to później) na pozycję 1
@@ -98,6 +95,7 @@ int main(int argc, char *argv[]) {
     // 1     0(i=0 j=0)   2         [1, 2, ?]
     // 2     2(i=2 j=0)   3         [1, 2, 3]
     // Wynik zapisze się w procesie "ROOT" o indeksie 0 (pos = 0), w tym przypadku to proces 3.
+    // MPI_Gather(wsk_do_buforu_zawierajacego_dane,liczba_elementow,typ_elementow,bufor_odbierajacy_dane,liczba_elementow_do_bufora_odbierajacego,typ_elementow_do_bufora_odbierajacego,numer_procesu_root, komunikator)
     if (j == 0) {
         MPI_Gather(&a[i], 1, MPI_INT, wynik, 1, MPI_INT, 0, kom_kolumny);
     }
