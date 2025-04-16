@@ -9,47 +9,6 @@ Toroidalna topologia oznacza, że procesy są uporządkowane w siatce, a procesy
 
 #define N 4 // Liczba procesów w jednym wierszu/kolumnie (Program należy uruchomiić z N*N procesami)
 
-//unkcja ta realizuje komunikację asynchroniczną między procesami w siatce toroidalnej, 
-// przyjmując rank (unikalny identyfikator procesu) oraz size (całkowitą liczbę procesów).
-void toroidal_communication(int rank, int size) {
-    // Zmienne przechowujące identyfikatory sąsiadów procesu w toroidalnej siatce: górę, prawo, lewo i dół.
-    int up, right, left, down;
-    // Zmienne przechowujące identyfikatory procesów, od których odbieramy wiadomości (z góry i z prawej).
-    int recv_from_up, recv_from_right;
-    //Tablica do przechowywania uchwytów do operacji asynchronicznych (operacje wysyłania i odbierania).
-    //MPI_Request identyfikuje nieblokujące operacje wysyłania i odbioru, używane później w MPI_Wait
-    MPI_Request request[4];
-    //Tablica do przechowywania statusów operacji asynchronicznych
-    //Przechowuje informacje o zakończonej operacji, np. źródło komunikatu, tag, rozmiar danych.
-    MPI_Status status[4];
-    
-    int row = rank / N; //Liczba określająca wiersz procesu w siatce.
-    int col = rank % N; //Liczba określająca kolumnę procesu w siatce.
-    
-    right = (col+1)%N + row*N; //Sąsiad po prawo
-    up =  ((row - 1 + N) % N) * N + col; // Sąsiad powyżej
-    left = (col - 1 + N) % N + row * N; // Sąsiad lewo
-    down = ((row + 1) % N) * N + col; // Sąsiad niżej
-    
-   //Asynchroniczna wysyłka identyfikatora procesu
-   //Każdy proces wysyła swój rank do procesu po prawej i poniżej 
-   //Wyjaśnienie toroid.png
-
-   //MPI_Isend(adres_zmiennej_ktora_wysylamy,ilosc_wyslanych_danych,typ_danych,odbiorca,tag_komunikacji,komunikator,adres_do_elementu_tablicy_MPI_REQUEST_pozwalający_śledzić_stan_operacji_wysyłania)
-    MPI_Isend(&rank, 1, MPI_INT, right, 0, MPI_COMM_WORLD, &request[0]);
-    MPI_Isend(&rank, 1, MPI_INT, up, 1, MPI_COMM_WORLD, &request[1]);
-    
-    //Asynchroniczny odbiór identyfikatora procesu. Odbieramy od sąsiadów po lewej i dołu
-    MPI_Irecv(&recv_from_right, 1, MPI_INT, left, 0, MPI_COMM_WORLD, &request[2]); //odbiór z lewej
-    MPI_Irecv(&recv_from_up, 1, MPI_INT, down, 1, MPI_COMM_WORLD, &request[3]); //odbiór z dołu
-    
-    //czeka na zakończenie wszystkich czterech operacji asynchronicznych (wysyłania i odbierania). 
-    // request to tablica uchwytów, a status to tablica statusów operacji.
-    MPI_Waitall(4, request, status);
-    
-    printf("Proces %d wysłał wiadomość do %d (prawa) i do %d (góra)\n", rank, right, up);
-    printf("Proces %d odebrał wiadomość od %d (lewa) i od %d (dół)\n", rank, recv_from_right, recv_from_up);
-}
 
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
@@ -68,7 +27,43 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     
-    toroidal_communication(rank, size);
+     // Zmienne przechowujące identyfikatory sąsiadów procesu w toroidalnej siatce: górę, prawo, lewo i dół.
+     int up, right, left, down;
+     // Zmienne przechowujące identyfikatory procesów, od których odbieramy wiadomości (z góry i z prawej).
+     int recv_from_up, recv_from_right;
+     //Tablica do przechowywania uchwytów do operacji asynchronicznych (operacje wysyłania i odbierania).
+     //MPI_Request identyfikuje nieblokujące operacje wysyłania i odbioru, używane później w MPI_Wait
+     MPI_Request request[4];
+     //Tablica do przechowywania statusów operacji asynchronicznych
+     //Przechowuje informacje o zakończonej operacji, np. źródło komunikatu, tag, rozmiar danych.
+     MPI_Status status[4];
+     
+     int row = rank / N; //Liczba określająca wiersz procesu w siatce.
+     int col = rank % N; //Liczba określająca kolumnę procesu w siatce.
+     
+     right = (col+1)%N + row*N; //Sąsiad po prawo
+     up =  ((row - 1 + N) % N) * N + col; // Sąsiad powyżej
+     left = (col - 1 + N) % N + row * N; // Sąsiad lewo
+     down = ((row + 1) % N) * N + col; // Sąsiad niżej
+     
+    //Asynchroniczna wysyłka identyfikatora procesu
+    //Każdy proces wysyła swój rank do procesu po prawej i poniżej 
+    //Wyjaśnienie toroid.png
+ 
+    //MPI_Isend(adres_zmiennej_ktora_wysylamy,ilosc_wyslanych_danych,typ_danych,odbiorca,tag_komunikacji,komunikator,adres_do_elementu_tablicy_MPI_REQUEST_pozwalający_śledzić_stan_operacji_wysyłania)
+     MPI_Isend(&rank, 1, MPI_INT, right, 0, MPI_COMM_WORLD, &request[0]);
+     MPI_Isend(&rank, 1, MPI_INT, up, 1, MPI_COMM_WORLD, &request[1]);
+     
+     //Asynchroniczny odbiór identyfikatora procesu. Odbieramy od sąsiadów po lewej i dołu
+     MPI_Irecv(&recv_from_right, 1, MPI_INT, left, 0, MPI_COMM_WORLD, &request[2]); //odbiór z lewej
+     MPI_Irecv(&recv_from_up, 1, MPI_INT, down, 1, MPI_COMM_WORLD, &request[3]); //odbiór z dołu
+     
+     //czeka na zakończenie wszystkich czterech operacji asynchronicznych (wysyłania i odbierania). 
+     // request to tablica uchwytów, a status to tablica statusów operacji.
+     MPI_Waitall(4, request, status);
+     
+     printf("Proces %d wysłał wiadomość do %d (prawa) i do %d (góra)\n", rank, right, up);
+     printf("Proces %d odebrał wiadomość od %d (lewa) i od %d (dół)\n", rank, recv_from_right, recv_from_up);
     
     MPI_Finalize();
     return EXIT_SUCCESS;
